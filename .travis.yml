@@ -1,0 +1,94 @@
+sudo: required
+language: cpp
+python: 3.6
+
+matrix:
+  include:
+
+  # Linux Builds
+  - name: linux w/ clang 7.0
+    os: linux
+    dist: xenial
+    compiler: clang
+    #addons:
+    #  apt:
+    #    sources:
+    #      - ubuntu-toolchain-r-test
+    #      - llvm-toolchain-xenial-7.0
+    #    packages:
+    #      - clang-7.0       
+    env:
+      - COMPILER=clang++-7.0
+      - PYENV_COMMAND="pyenv global 3.7"
+      - CONAN_COMMAND="conan install .. --build boost"
+
+  - name: linux w/ clang 3.6
+    os: linux
+    dist: trusty
+    compiler: clang
+    addons:
+      apt:
+        sources:
+          # add PPAs with more up-to-date toolchains
+          - ubuntu-toolchain-r-test
+          - llvm-toolchain-precise-3.6
+        packages:
+          # install toolchains
+          - clang-3.6
+    env: 
+      - COMPILER=clang++-3.6
+      - PYENV_COMMAND="pyenv global 3.6"
+      - CONAN_COMMAND="conan install .. --build boost"
+
+  - name: linux w/ gcc 6
+    os: linux
+    dist: trusty
+    compiler: gcc
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+        packages:
+          - g++-6
+    env: 
+      - COMPILER=g++-6
+      - PYENV_COMMAND="pyenv global 3.6"
+      - CONAN_COMMAND="conan install .. --build boost" 
+
+  - name: osx w/ Xcode 9
+    os: osx
+    osx_image: xcode9.4
+    compiler: clang
+    env: 
+      - PYENV_COMMAND=""
+      - CONAN_COMMAND="conan install .."
+  
+  - name: osx w/ Xcode 10.1
+    os: osx
+    osx_image: xcode10
+    compiler: clang
+    env: 
+      - PYENV_COMMAND=""
+      - CONAN_COMMAND="conan install .."
+
+before_install:
+#    if [ "$TRAVIS_OS_NAME" = "osx" ]; then
+#      brew update; brew install python3.6;
+#    fi
+  - eval "${PYENV_COMMAND}"
+  
+
+install:
+  - pip install conan
+  #- conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
+  - mkdir build
+  - cmake --version
+  
+script:
+  - cd build
+  - eval "${CONAN_COMMAND}"
+  - cmake .. -G "Unix Makefiles"
+  - make
+
+  - cd bin
+  - ./streams_test -s -r junit -o test-report.junit.xml

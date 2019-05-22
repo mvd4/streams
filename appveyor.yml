@@ -1,0 +1,83 @@
+# mvd streams - appveyor configuration file
+
+version: configuring.{build}
+
+environment:
+    matrix:
+    # VS 2015 Win 32 
+    - image: Visual Studio 2015 
+      configuration: Release
+      platform: Win32
+      MVD_TOOLSET: msvc-14.0
+      MVD_GENERATOR: Visual Studio 14 2015
+    
+    # VS 2015 x64 
+    - image: Visual Studio 2015 
+      configuration: Release
+      platform: x64
+      MVD_TOOLSET: msvc-14.0
+      MVD_GENERATOR: Visual Studio 14 2015 Win64
+
+    # VS 2017 Win 32 
+    - image: Visual Studio 2017 
+      configuration: Release
+      platform: Win32
+      MVD_TOOLSET: msvc-15.0
+      MVD_GENERATOR: Visual Studio 14 2015
+    
+    # VS 2017 x64 
+    - image: Visual Studio 2017
+      configuration: Release
+      platform: x64
+      MVD_TOOLSET: msvc-15.0
+      MVD_GENERATOR: Visual Studio 14 2015 Win64
+
+
+clone_folder: c:\mvd\streams
+
+before_build:
+- cmd: >-
+    echo Building %CONFIGURATION% - %PLATFORM% ( %MVD_TOOLSET% / %MVD_GENERATOR% )
+    
+    if %PLATFORM% == x64 (set MVD_PLATFORM=x64) else (set MVD_PLATFORM=x32)
+    
+    cd %APPVEYOR_BUILD_FOLDER%
+    
+    C:\Python35\python.exe -m venv env
+    
+    env\Scripts\activate.bat
+    
+    pip install conan
+    
+    conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
+    
+    mkdir build
+    
+    cd build
+    
+    conan install ..
+    
+    cmake .. -G "%MVD_GENERATOR%"
+    
+build:
+  project: build/streams_test.sln
+
+
+test_script:
+- cmd: >-
+    echo Running Tests for %CONFIGURATION% - %PLATFORM%
+    
+    set MVD_TEST_FOLDER=%APPVEYOR_BUILD_FOLDER%\build\bin\
+    
+    cd %MVD_TEST_FOLDER%
+    
+    streams_test.exe -s -r junit -o test-report.junit.xml
+    
+on_finish:
+- ps: >-
+    $testReportPath = "$($env:MVD_TEST_FOLDER)\test-report.junit.xml"
+
+    if([System.IO.File]::Exists($testReportPath)){
+      $wc = New-Object 'System.Net.WebClient'
+      $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path $testReportPath))
+    }

@@ -4,83 +4,96 @@ python: 3.6
 
 matrix:
   include:
+    # Linux GCC Builds
+    - name: linux gcc-5
+      os: linux
+      dist: trusty
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+      env:
+        - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+        - PYENV_COMMAND="pyenv global 3.6"
+        - CONAN_COMMAND="conan install .. --build boost"
 
-  # Linux Builds
-  - name: linux w/ clang 7.0
-    os: linux
-    dist: xenial
-    compiler: clang
-    #addons:
-    #  apt:
-    #    sources:
-    #      - ubuntu-toolchain-r-test
-    #      - llvm-toolchain-xenial-7.0
-    #    packages:
-    #      - clang-7.0       
-    env:
-      - COMPILER=clang++-7.0
-      - PYENV_COMMAND="pyenv global 3.7"
-      - CONAN_COMMAND="conan install .. --build boost"
-
-  - name: linux w/ clang 3.6
-    os: linux
-    dist: trusty
-    compiler: clang
-    addons:
-      apt:
-        sources:
-          # add PPAs with more up-to-date toolchains
-          - ubuntu-toolchain-r-test
-          - llvm-toolchain-precise-3.6
-        packages:
-          # install toolchains
-          - clang-3.6
-    env: 
-      - COMPILER=clang++-3.6
-      - PYENV_COMMAND="pyenv global 3.6"
-      - CONAN_COMMAND="conan install .. --build boost"
-
-  - name: linux w/ gcc 6
-    os: linux
-    dist: trusty
-    compiler: gcc
-    addons:
-      apt:
-        sources:
-          - ubuntu-toolchain-r-test
-        packages:
-          - g++-6
-    env: 
-      - COMPILER=g++-6
-      - PYENV_COMMAND="pyenv global 3.6"
-      - CONAN_COMMAND="conan install .. --build boost" 
-
-  - name: osx w/ Xcode 9
-    os: osx
-    osx_image: xcode9.4
-    compiler: clang
-    env: 
-      - PYENV_COMMAND=""
-      - CONAN_COMMAND="conan install .."
+    - name: linux gcc-9
+      os: linux
+      dist: xenial
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-9
+      env:
+        - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
+        - PYENV_COMMAND="pyenv global 3.7"
+        - CONAN_COMMAND="conan install .. --build boost --build bzip2 --build zlib"
   
-  - name: osx w/ Xcode 10.1
-    os: osx
-    osx_image: xcode10
-    compiler: clang
-    env: 
-      - PYENV_COMMAND=""
-      - CONAN_COMMAND="conan install .."
+  
+    # Linux clang Builds
+    - name: linux clang 3.6
+      os: linux
+      dist: trusty
+      compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.6
+          packages:
+            - clang-3.6
+      env:
+        - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
+        - PYENV_COMMAND="pyenv global 3.6"
+        - CONAN_COMMAND="conan install .. --build boost --build bzip2 --build zlib"  "
+
+    - name: linux clang 8
+      os: linux
+      dist: xenial
+      compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-8
+          packages:
+            - clang-8
+      env:
+        - MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
+        - PYENV_COMMAND="pyenv global 3.7"
+        - CONAN_COMMAND="conan install .. --build boost"
+  
+  
+    # macos xcode builds
+    - name: osx w/ Xcode 9
+      os: osx
+      osx_image: xcode9.4
+      compiler: clang
+      env: 
+        - PYENV_COMMAND=""
+        - CONAN_COMMAND="conan install .."
+  
+    - name: osx w/ Xcode 10.1
+      os: osx
+      osx_image: xcode10
+      compiler: clang
+      env: 
+        - PYENV_COMMAND=""
+        - CONAN_COMMAND="conan install .."
 
 before_install:
-#    if [ "$TRAVIS_OS_NAME" = "osx" ]; then
-#      brew update; brew install python3.6;
-#    fi
+  - eval "${MATRIX_EVAL}"
   - eval "${PYENV_COMMAND}"
   
 
 install:
   - pip install conan
-  #- conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
   - mkdir build
   - cmake --version
   

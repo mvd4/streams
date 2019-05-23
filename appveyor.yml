@@ -1,6 +1,6 @@
 # mvd streams - appveyor configuration file
 
-version: 0.1.{build}
+version: 0.1.0.{build}
 
 environment:
     matrix:

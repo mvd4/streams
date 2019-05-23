@@ -13,7 +13,20 @@ conan_basic_setup()
 add_executable( ${PROJECT_NAME} tests/main.cpp )
 
 if(MSVC)
-  target_compile_options( ${PROJECT_NAME} PRIVATE /W4)
+  target_compile_options( ${PROJECT_NAME} PRIVATE /W4 /WX 
+    /w44265 # non-virtual destructor but virtual methods
+    #/w44355 # this pointer used in ctor initializer list
+    /w44484 # function not marked override, virtual
+    /w44485 # function not marked override, virtual
+    /w44548 # expression has no effect
+    /w44555 # expression has no effect
+    #/w44668 # checking undefined preprocessor value with #if 
+    #/w44365 # int->uint conversion
+    /w44350 # warning when binding an rvalue to a non-const-ref
+    /w44867 # pointer to member function was not initialized
+    /w44986 # exception specification does not match previous...
+    /w45038 # member initialization order
+  )  
 else()
   target_compile_options( ${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic )
 endif()

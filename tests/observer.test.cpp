@@ -28,6 +28,8 @@
 
 namespace mvd
 {
+namespace streams
+{
   TEST_CASE( "observable_base (non-locking)" )
   {
     using observer_t = observer_base < access_policy::none >;
@@ -200,12 +202,12 @@ namespace mvd
       observable_t observable;
     
       observable.register_observer(o1);
-#if BOOST_COMP_CLANG && BOOST_COMP_CLANG >= BOOST_VERSION_NUMBER(7, 0, 0)
+#if BOOST_COMP_CLANG && BOOST_COMP_CLANG >= BOOST_VERSION_NUMBER(7, 0, 0) && !defined __APPLE__
 # pragma clang diagnostic push
 # pragma clang diagnostic ignored "-Wself-assign-overloaded"
 #endif
       o1 = o1;
-#if BOOST_COMP_CLANG && BOOST_COMP_CLANG >= BOOST_VERSION_NUMBER(7, 0, 0)
+#if BOOST_COMP_CLANG && BOOST_COMP_CLANG >= BOOST_VERSION_NUMBER(7, 0, 0) && !defined __APPLE__
 # pragma clang diagnostic pop
 #endif
 
@@ -253,4 +255,5 @@ namespace mvd
       CHECK( observable.get_observer_count() == 0 );
     }
   }
+}
 }

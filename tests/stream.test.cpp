@@ -27,6 +27,8 @@
 
 namespace mvd
 {
+namespace streams
+{
   TEST_CASE( "Subscription (non-locking stream)" )
   {
     struct non_locking_observer : observer < int, access_policy::none >
@@ -478,4 +480,5 @@ namespace mvd
       CHECK( o.receivedValues == expectedValues );
     }
   }
+}
 }

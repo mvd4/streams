@@ -34,6 +34,8 @@
 
 namespace mvd
 {
+namespace streams
+{
   template< typename T >
   using lockfree_queue_t = boost::lockfree::queue< T, boost::lockfree::fixed_sized< true > >;
 
@@ -236,4 +238,5 @@ namespace mvd
       CHECK( receivedValues.empty() );
     }
   }
+}
 }

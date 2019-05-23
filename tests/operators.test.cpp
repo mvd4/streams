@@ -27,6 +27,8 @@
 
 namespace mvd
 {
+namespace streams
+{
   TEST_CASE( "filter streams" )
   {
     struct filter_observer : observer< int, access_policy::none >
@@ -227,4 +229,5 @@ namespace mvd
     }
   }
 
+}
 }

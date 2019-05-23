@@ -23,6 +23,8 @@
 
 namespace mvd
 {
+namespace streams
+{
   template< typename event_t, typename access_policy_t >
   class filter_source : public observer< event_t, access_policy_t >
   {
@@ -228,4 +230,4 @@ namespace mvd
   }
 
 }
-
+}

@@ -13,9 +13,9 @@ conan_basic_setup()
 add_executable( ${PROJECT_NAME} tests/main.cpp )
 
 if(MSVC)
-  target_compile_options( ${PROJECT_NAME} PRIVATE /W4 /WX )
+  target_compile_options( ${PROJECT_NAME} PRIVATE /W4)
 else()
-  target_compile_options( ${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic -Werror )
+  target_compile_options( ${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic )
 endif()
 
 
@@ -26,7 +26,6 @@ target_sources( ${PROJECT_NAME} PRIVATE "include/mvd/streams/async_stream.h" )
 target_sources( ${PROJECT_NAME} PRIVATE "include/mvd/streams/observer.h" )
 target_sources( ${PROJECT_NAME} PRIVATE "include/mvd/streams/operators.h" )
 target_sources( ${PROJECT_NAME} PRIVATE "include/mvd/streams/stream.h" )
-target_sources( ${PROJECT_NAME} PRIVATE "include/mvd/streams/subject.h" )
 
 target_sources( ${PROJECT_NAME} PRIVATE "tests/async_stream.test.cpp" )
 target_sources( ${PROJECT_NAME} PRIVATE "tests/observer.test.cpp" )

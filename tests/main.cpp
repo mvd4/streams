@@ -20,14 +20,23 @@
 #define CATCH_CONFIG_RUNNER
 #include <catch2/catch.hpp>
 
+#include <mvd/streams/version.h>
+
 #include <iostream>
 
 
 int main( int argc, char* argv[] )
 {
+  std::cout 
+    << "mvd streams v" 
+    << mvd::streams::libraryVersionMajor << "."
+    << mvd::streams::libraryVersionMinor << "."
+    << mvd::streams::libraryVersionMicro << "."
+    << " test suite\n";
+
   Catch::Session session; 
 
-  int returnCode = session.applyCommandLine( argc, argv );
+  const int returnCode = session.applyCommandLine( argc, argv );
   if( returnCode != 0 ) 
     return returnCode;
 

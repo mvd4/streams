@@ -18,35 +18,14 @@
 
 #pragma once
 
-#include <mutex>
-
 namespace mvd
 {
 namespace streams
 {
-namespace access_policy
-{
-  class none
-  {
-  public:
-    struct mutex_t {};
-    struct lock_t { ~lock_t(){} };  // non-trivial dtor prevents unused variable warning
+  static constexpr unsigned libraryVersionMajor = 0;
 
-    static lock_t scoped_lock( mutex_t& ) { return lock_t{}; }
-  };
+  static constexpr unsigned libraryVersionMinor = 1;
 
-
-  class locked
-  {
-    public:
-      using mutex_t = std::mutex;
-      using lock_t = std::unique_lock< mutex_t >;
-      
-    static lock_t scoped_lock( mutex_t& m_ )
-    {
-      return std::unique_lock< mutex_t >( m_ );
-    }
-  };  
-}
+  static constexpr unsigned libraryVersionMicro = 0;
 }
 }

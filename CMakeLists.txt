@@ -14,6 +14,7 @@ add_executable( ${PROJECT_NAME} tests/main.cpp )
 
 if(MSVC)
   target_compile_options( ${PROJECT_NAME} PRIVATE /W4 /WX 
+    /wd4324 # disable structure was padded due to alignment specifier
     /w44265 # non-virtual destructor but virtual methods
     #/w44355 # this pointer used in ctor initializer list
     /w44484 # function not marked override, virtual

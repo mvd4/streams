@@ -46,6 +46,8 @@ before_build:
     C:\Python35\python.exe -m venv env
     
     env\Scripts\activate.bat
+
+    python support\python\library_version.py -l streams --appveyor
     
     pip install conan
     

@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "stream.h"
+#include "basic_stream.h"
 
 
 namespace mvd
@@ -26,13 +26,13 @@ namespace mvd
 namespace streams
 {
   template< typename event_t, typename access_policy_t >
-  class filter_source : public observer< event_t, access_policy_t >
+  class filter_source : public basic_observer< event_t, access_policy_t >
   {
-    using base_t = observer< event_t, access_policy_t >;
+    using base_t = basic_observer< event_t, access_policy_t >;
 
   public:
 
-    using stream_t = stream< event_t, access_policy_t >;
+    using stream_t = basic_stream< event_t, access_policy_t >;
 
     filter_source( stream_t& s_, typename stream_t::filter_fn_t fn_ )
       : m_filter( std::move( fn_ ) )
@@ -86,8 +86,8 @@ namespace streams
   {
   public:
 
-    using stream_t = stream< event_t, access_policy_t >;
-    using observer_t = observer< event_t, access_policy_t >;
+    using stream_t = basic_stream< event_t, access_policy_t >;
+    using observer_t = basic_observer< event_t, access_policy_t >;
 
     merge_source( stream_t& s1_, stream_t& s2_ )
       : m_observer1( *this )
@@ -187,21 +187,21 @@ namespace streams
 
 
   template< typename event_t, typename access_policy_t >
-  stream< event_t, access_policy_t > filter( 
-    stream< event_t, access_policy_t >& s_, 
-    typename stream< event_t, access_policy_t >::filter_fn_t f_ 
+  basic_stream< event_t, access_policy_t > filter( 
+    basic_stream< event_t, access_policy_t >& s_, 
+    typename basic_stream< event_t, access_policy_t >::filter_fn_t f_ 
   )
   {
-    using stream_t = stream< event_t, access_policy_t >;
+    using stream_t = basic_stream< event_t, access_policy_t >;
     using filter_t = filter_source< event_t, access_policy_t >;
     
     return std::move( stream_t( filter_t( s_, f_ ) ) );    
   }
   
   template< typename event_t, typename access_policy_t >
-  stream< event_t, access_policy_t > operator>> ( 
-    stream< event_t, access_policy_t >& s_, 
-    typename stream< event_t, access_policy_t >::filter_fn_t f_ 
+  basic_stream< event_t, access_policy_t > operator>> ( 
+    basic_stream< event_t, access_policy_t >& s_, 
+    typename basic_stream< event_t, access_policy_t >::filter_fn_t f_ 
   )
   {
     return std::move( filter( s_, f_ ) );
@@ -210,20 +210,20 @@ namespace streams
 
 
   template< typename event_t, typename access_policy_t >
-  stream< event_t, access_policy_t > merge( 
-    stream< event_t, access_policy_t >& s1_, 
-    stream< event_t, access_policy_t >& s2_ 
+  basic_stream< event_t, access_policy_t > merge( 
+    basic_stream< event_t, access_policy_t >& s1_, 
+    basic_stream< event_t, access_policy_t >& s2_ 
   )
   {
-    using stream_t = stream< event_t, access_policy_t >;
+    using stream_t = basic_stream< event_t, access_policy_t >;
 
     return std::move( stream_t( merge_source< event_t, access_policy_t >( s1_, s2_ ) ) );
   }
 
   template< typename event_t, typename access_policy_t >
-  stream< event_t, access_policy_t > operator|| (
-    stream< event_t, access_policy_t >& s1_,
-    stream< event_t, access_policy_t >& s2_
+  basic_stream< event_t, access_policy_t > operator|| (
+    basic_stream< event_t, access_policy_t >& s1_,
+    basic_stream< event_t, access_policy_t >& s2_
   )
   {
     return std::move( merge( s1_, s2_ ) );

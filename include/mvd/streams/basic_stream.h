@@ -20,41 +20,43 @@
 
 #include "observer.h"
 
+#include <memory>
+
 
 namespace mvd
 {
 namespace streams
 {
   // -----------------------------------------------------------------------------
-  // stream
+  // basic_stream
   // -----------------------------------------------------------------------------
 
   template< typename event_t, typename access_policy_t >
-  class observer;
+  class basic_observer;
   
   template< typename event_t, typename access_policy_t >
-  class stream : public observable_base< access_policy_t >
+  class basic_stream : public observable_base< access_policy_t >
   {
     using base_t = observable_base< access_policy_t >;
   public:
 
-    using observer_t = observer< event_t, access_policy_t >;
+    using observer_t = basic_observer< event_t, access_policy_t >;
     using on_event_t = std::function< void( event_t& ) >;
     using filter_fn_t = std::function< bool( const event_t& ) >;
 
 
-    stream() = default;
-    ~stream() override { on_done(); }
+    basic_stream() = default;
+    ~basic_stream() override { on_done(); }
     
     template< typename source_t >
-    stream( source_t s_ )
+    basic_stream( source_t s_ )
       : m_source( std::make_unique< source_model_t< source_t > >( std::move( s_ ) ) )
     {
       m_source->attach( *this );
     }
 
-    stream( const stream& other_ ) : base_t() { *this = other_; }
-    stream& operator= ( const stream& other_ )
+    basic_stream( const basic_stream& other_ ) : base_t() { *this = other_; }
+    basic_stream& operator= ( const basic_stream& other_ )
     {
       base_t::operator= ( other_ );
       if( other_.m_source )
@@ -65,10 +67,10 @@ namespace streams
       return *this;
     }
     
-    stream( stream&& other_ ) : base_t() { *this = std::move( other_ ); }
-    stream& operator= ( stream&& other_ )
+    basic_stream( basic_stream&& other_ ) : base_t() { *this = std::move( other_ ); }
+    basic_stream& operator= ( basic_stream&& other_ )
     {
-      //should moving the stream actually move the observers??
+      //should moving the basic_stream actually move the observers??
       base_t::operator= ( std::move( other_ ) );
       m_lambdaObservers = std::move( other_.m_lambdaObservers );
       m_source = std::move( other_.m_source );
@@ -81,7 +83,7 @@ namespace streams
     void subscribe( on_event_t callback_ );
     void unsubscribe( observer_t& o_ ) { base_t::unregister_observer( o_ ); }
 
-    virtual stream& operator << ( event_t e_ );
+    virtual basic_stream& operator << ( event_t e_ );
     void on_done();
     
   private:
@@ -112,7 +114,7 @@ namespace streams
       virtual ~source_concept_t() = default;
 
       virtual source_ptr_t clone() = 0;
-      virtual void attach( stream& s_ ) = 0;
+      virtual void attach( basic_stream& s_ ) = 0;
     };
 
 
@@ -128,7 +130,7 @@ namespace streams
         return std::make_unique< source_model_t< source_impl_t > >( m_impl );
       }
 
-      void attach( stream& s_ ) final { m_impl.attach( s_ ); }
+      void attach( basic_stream& s_ ) final { m_impl.attach( s_ ); }
 
     private:
       source_impl_t m_impl;
@@ -141,13 +143,13 @@ namespace streams
 
 
   // -----------------------------------------------------------------------------
-  // observer
+  // basic_observer
   // -----------------------------------------------------------------------------
 
   template< typename event_t, typename access_policy_t >
-  class observer : public observer_base< access_policy_t >
+  class basic_observer : public observer_base< access_policy_t >
   {
-    friend class stream< event_t, access_policy_t >;
+    friend class basic_stream< event_t, access_policy_t >;
   public:
 
     virtual void on_event( event_t& e_ ) = 0;
@@ -163,7 +165,7 @@ namespace streams
   // -----------------------------------------------------------------------------
 
   template< typename event_t, typename access_policy_t >
-  inline void stream< event_t, access_policy_t >::subscribe( on_event_t callback_ )
+  inline void basic_stream< event_t, access_policy_t >::subscribe( on_event_t callback_ )
   {
     auto l = access_policy_t::scoped_lock( m_mutex );
     m_lambdaObservers.emplace_back( callback_ );
@@ -172,7 +174,7 @@ namespace streams
 
 
   template< typename event_t, typename access_policy_t >
-  inline stream< event_t, access_policy_t >& stream< event_t, access_policy_t >::operator<<(
+  inline basic_stream< event_t, access_policy_t >& basic_stream< event_t, access_policy_t >::operator<<(
     event_t e_
   )
   {
@@ -186,7 +188,7 @@ namespace streams
   }
   
   template< typename event_t, typename access_policy_t >
-  inline void stream< event_t, access_policy_t >::on_done()
+  inline void basic_stream< event_t, access_policy_t >::on_done()
   {
     this->for_each_observer(
       []( observer_base< access_policy_t >& o_ )

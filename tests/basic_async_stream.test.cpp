@@ -18,7 +18,7 @@
 
 #include <catch2/catch.hpp>
 
-#include <mvd/streams/async_stream.h>
+#include <mvd/streams/basic_async_stream.h>
 #include <mvd/streams/access_policy.h>
 
 #include <boost/predef.h>
@@ -193,13 +193,13 @@ namespace streams
   }
     
     
-  TEST_CASE( "async_observer (lockfree queue)" )
+  TEST_CASE( "basic_async_observer (lockfree queue)" )
   {
     struct test_observer
-      : async_observer < int, boost::lockfree::queue< int >, access_policy::none >
+      : basic_async_observer < int, access_policy::none, lockfree_queue_t >
     {
       test_observer()
-        : async_observer( 100u )
+        : basic_async_observer( 100u )
       {}
     };
     

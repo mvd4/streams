@@ -36,14 +36,14 @@ endif()
 target_include_directories( ${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_LIST_DIR}/include" )
 
 target_sources( ${PROJECT_NAME} PRIVATE "include/mvd/streams/access_policy.h" )
-target_sources( ${PROJECT_NAME} PRIVATE "include/mvd/streams/async_stream.h" )
+target_sources( ${PROJECT_NAME} PRIVATE "include/mvd/streams/basic_async_stream.h" )
+target_sources( ${PROJECT_NAME} PRIVATE "include/mvd/streams/basic_stream.h" )
 target_sources( ${PROJECT_NAME} PRIVATE "include/mvd/streams/observer.h" )
 target_sources( ${PROJECT_NAME} PRIVATE "include/mvd/streams/operators.h" )
-target_sources( ${PROJECT_NAME} PRIVATE "include/mvd/streams/stream.h" )
 
-target_sources( ${PROJECT_NAME} PRIVATE "tests/async_stream.test.cpp" )
+target_sources( ${PROJECT_NAME} PRIVATE "tests/basic_async_stream.test.cpp" )
+target_sources( ${PROJECT_NAME} PRIVATE "tests/basic_stream.test.cpp" )
 target_sources( ${PROJECT_NAME} PRIVATE "tests/observer.test.cpp" )
 target_sources( ${PROJECT_NAME} PRIVATE "tests/operators.test.cpp" )
-target_sources( ${PROJECT_NAME} PRIVATE "tests/stream.test.cpp" )
 
 target_link_libraries(${PROJECT_NAME} ${CONAN_LIBS})

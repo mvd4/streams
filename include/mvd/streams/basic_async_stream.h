@@ -161,25 +161,25 @@ namespace streams
 
   
   // -----------------------------------------------------------------------------
-  // async_observer
+  // basic_async_observer
   // -----------------------------------------------------------------------------
 
   template<
     typename event_t,
-    typename collection_t,
-    typename access_policy_t
+    typename access_policy_t,
+    template< typename > class collection_t = default_queue
   >
-  class async_observer : public basic_observer< event_t, access_policy_t >
+  class basic_async_observer : public basic_observer< event_t, access_policy_t >
   {
     using base_t = basic_observer< event_t, access_policy_t >;
 
   public:
 
-    async_observer( collection_t&& preparedQueue_ )
+    basic_async_observer( collection_t< event_t >&& preparedQueue_ )
       : m_events( std::move( preparedQueue_ ) )
     {}
 
-    async_observer( size_t queueSize_ )
+    basic_async_observer( size_t queueSize_ )
       : m_events( queueSize_ )
     {}
       
@@ -199,7 +199,7 @@ namespace streams
     
   private:
   
-    collection_t m_events;
+    collection_t< event_t > m_events;
   };
   
   

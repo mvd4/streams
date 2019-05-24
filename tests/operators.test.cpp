@@ -31,7 +31,7 @@ namespace streams
 {
   TEST_CASE( "filter streams" )
   {
-    struct filter_observer : observer< int, access_policy::none >
+    struct filter_observer : basic_observer< int, access_policy::none >
     {
       void on_event( int& v_ ) final { values.push_back( v_ ); }
       void on_done() final { onDoneReceived = true; }
@@ -40,10 +40,10 @@ namespace streams
       bool onDoneReceived = false;
     };
   
-    using stream_t = stream< int, access_policy::none >;
+    using stream_t = basic_stream< int, access_policy::none >;
     
     
-    SECTION( "Observer to filtered stream receives filtered events only" )
+    SECTION( "Observer to filtered basic_stream receives filtered events only" )
     {
       stream_t s;
       auto filtered = s >> []( const int& i ) { return i%2 == 0; };
@@ -60,7 +60,7 @@ namespace streams
       CHECK( o.values == expectedValues );
     }
   
-    SECTION( "Copying a filtered stream duplicates the filter" )
+    SECTION( "Copying a filtered basic_stream duplicates the filter" )
     {
       stream_t s;
       
@@ -83,7 +83,7 @@ namespace streams
       CHECK( o2.values == expectedValues );
     }
     
-    SECTION( "Moving a filtered stream receives the same filtered events" )
+    SECTION( "Moving a filtered basic_stream receives the same filtered events" )
     {
       stream_t s;
       auto filtered1 = s >> []( int i ) { return i%2 == 0; };
@@ -104,7 +104,7 @@ namespace streams
       CHECK( o.values == expectedValues );
     }
   
-    SECTION( "Can remove source stream before filter" )
+    SECTION( "Can remove source basic_stream before filter" )
     {
       stream_t filtered;
       
@@ -121,7 +121,7 @@ namespace streams
 
   TEST_CASE( "merge streams" )
   {
-    struct merge_observer : observer< int, access_policy::none >
+    struct merge_observer : basic_observer< int, access_policy::none >
     {
       void on_event( int& v_ ) final { values.push_back( v_ ); }
       void on_done() final { onDoneReceived = true; }
@@ -130,10 +130,10 @@ namespace streams
       bool onDoneReceived = false;
     };
   
-    using stream_t = stream< int, access_policy::none >;
+    using stream_t = basic_stream< int, access_policy::none >;
     
     
-    SECTION( "Observer to merged stream receives events from both sources" )
+    SECTION( "Observer to merged basic_stream receives events from both sources" )
     {
       stream_t s1;
       stream_t s2;
@@ -155,7 +155,7 @@ namespace streams
     }
     
     
-    SECTION( "Copyied merged stream merges the same source streams" )
+    SECTION( "Copyied merged basic_stream merges the same source streams" )
     {
       stream_t s1;
       stream_t s2;
@@ -185,7 +185,7 @@ namespace streams
     }
     
 
-    SECTION( "Moved merged stream merges the same source streams" )
+    SECTION( "Moved merged basic_stream merges the same source streams" )
     {
       stream_t s1;
       stream_t s2;
@@ -210,11 +210,11 @@ namespace streams
             s2 << v;
       }
     
-      CHECK( o1.values.empty() );  // moving stream also moves subscribed observers??
+      CHECK( o1.values.empty() );  // moving basic_stream also moves subscribed observers??
       CHECK( o2.values == expectedValues );
     }
  
-    SECTION( "Can remove source streams before merged stream" )
+    SECTION( "Can remove source streams before merged basic_stream" )
     {
       stream_t merged;
       

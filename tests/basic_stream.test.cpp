@@ -18,7 +18,7 @@
 
 #include <catch2/catch.hpp>
 
-#include <mvd/streams/stream.h>
+#include <mvd/streams/basic_stream.h>
 #include <mvd/streams/access_policy.h>
 
 #include <future>
@@ -29,9 +29,9 @@ namespace mvd
 {
 namespace streams
 {
-  TEST_CASE( "Subscription (non-locking stream)" )
+  TEST_CASE( "Subscription (non-locking basic_stream)" )
   {
-    struct non_locking_observer : observer < int, access_policy::none >
+    struct non_locking_observer : basic_observer < int, access_policy::none >
     {
       void on_event( int& v_ ) final { value = v_; }
       void on_done() final { onDoneReceived = true; };
@@ -40,7 +40,7 @@ namespace streams
       bool onDoneReceived = false;
     };
 
-    using stream_t = stream< int, access_policy::none >;
+    using stream_t = basic_stream< int, access_policy::none >;
     
     SECTION( "Subscribing lambda receives events" )
     {
@@ -67,7 +67,7 @@ namespace streams
       CHECK( o.value == pushedValue );
     }
 
-    SECTION( "Unsubscribed observer stops receiving events" )
+    SECTION( "Unsubscribed basic_observer stops receiving events" )
     {
       stream_t stream;
       
@@ -87,7 +87,7 @@ namespace streams
     }
 
 
-    SECTION( "Can delete subscribed observer" )
+    SECTION( "Can delete subscribed basic_observer" )
     {
       stream_t stream;
       
@@ -105,7 +105,7 @@ namespace streams
     }
 
 
-    SECTION( "Can re-subscribe subscribed observer" )
+    SECTION( "Can re-subscribe subscribed basic_observer" )
     {
       stream_t stream1;
       stream_t stream2;
@@ -125,7 +125,7 @@ namespace streams
     }
 
 
-    SECTION( "Deleting stream before subscribed observers issues onDone notification" )
+    SECTION( "Deleting basic_stream before subscribed observers issues onDone notification" )
     {
       non_locking_observer o;
     
@@ -140,7 +140,7 @@ namespace streams
     }
 
 
-    SECTION( "Can copy construct subscribed observer" )
+    SECTION( "Can copy construct subscribed basic_observer" )
     {
       stream_t stream;
 
@@ -156,7 +156,7 @@ namespace streams
     }
 
 
-    SECTION( "Can move construct subscribed observer" )
+    SECTION( "Can move construct subscribed basic_observer" )
     {
       stream_t stream;
 
@@ -174,7 +174,7 @@ namespace streams
       CHECK( o2.value == pushedValue );
     }
     
-    SECTION( "Copying stream does not copy subscribed lambdas" )
+    SECTION( "Copying basic_stream does not copy subscribed lambdas" )
     {
       int pushedValue = 42;
       int expectedValue = 0;
@@ -189,7 +189,7 @@ namespace streams
       CHECK( receivedValue == expectedValue );
     }
     
-    SECTION( "Moving stream unregisters subscribed lambdas" )
+    SECTION( "Moving basic_stream unregisters subscribed lambdas" )
     {
       int pushedValue = 42;
       int receivedValue = 0;
@@ -206,7 +206,7 @@ namespace streams
       CHECK( receivedValue == expectedValue );
     }
     
-    SECTION( "Moving stream unregisters subscribed observers" )
+    SECTION( "Moving basic_stream unregisters subscribed observers" )
     {
       stream_t stream1;
       non_locking_observer o;
@@ -221,9 +221,9 @@ namespace streams
   }
 
 
-  TEST_CASE( "Subscription (locking stream)" )
+  TEST_CASE( "Subscription (locking basic_stream)" )
   {
-    struct locking_observer : observer < int, access_policy::locked >
+    struct locking_observer : basic_observer < int, access_policy::locked >
     {
       void on_event( int& v_ ) final { value = v_; }
       void on_done() final { onDoneReceived = true; };
@@ -232,7 +232,7 @@ namespace streams
       bool onDoneReceived = false;
     };
     
-    using stream_t = stream< int, access_policy::locked >;
+    using stream_t = basic_stream< int, access_policy::locked >;
   
     SECTION( "Subscribing lambda receives events" )
     {
@@ -258,7 +258,7 @@ namespace streams
       CHECK( o.value == pushedValue );
     }
 
-    SECTION( "Can unsubscribe subscribed observer" )
+    SECTION( "Can unsubscribe subscribed basic_observer" )
     {
       stream_t stream;
 
@@ -278,7 +278,7 @@ namespace streams
     }
 
 
-    SECTION( "Can delete subscribed observer" )
+    SECTION( "Can delete subscribed basic_observer" )
     {
       stream_t stream;
     
@@ -296,7 +296,7 @@ namespace streams
     }
 
 
-    SECTION( "Can re-subscribe subscribed observer" )
+    SECTION( "Can re-subscribe subscribed basic_observer" )
     {
       stream_t stream1;
       stream_t stream2;
@@ -316,7 +316,7 @@ namespace streams
     }
 
 
-    SECTION( "Deleting stream before subscribed observers issues onDone notification" )
+    SECTION( "Deleting basic_stream before subscribed observers issues onDone notification" )
     {
       locking_observer o;
     
@@ -331,7 +331,7 @@ namespace streams
     }
 
 
-    SECTION( "Can copy construct subscribed observer" )
+    SECTION( "Can copy construct subscribed basic_observer" )
     {
       stream_t stream;
 
@@ -346,7 +346,7 @@ namespace streams
       CHECK( o2.value == pushedValue );
     }
 
-    SECTION( "Can move construct subscribed observer" )
+    SECTION( "Can move construct subscribed basic_observer" )
     {
       stream_t stream;
 
@@ -364,7 +364,7 @@ namespace streams
       CHECK( o2.value == pushedValue );
     }
     
-    SECTION( "Moving stream unregisters subscribed lambdas" )
+    SECTION( "Moving basic_stream unregisters subscribed lambdas" )
     {
       int pushedValue = 42;
       int receivedValue = 0;
@@ -381,7 +381,7 @@ namespace streams
       CHECK( receivedValue == expectedValue );
     }
     
-    SECTION( "Moving stream unregisters subscribed observers" )
+    SECTION( "Moving basic_stream unregisters subscribed observers" )
     {
       stream_t stream1;
       locking_observer o;
@@ -428,9 +428,9 @@ namespace streams
   }
   
   
-  TEST_CASE( "Concurrent access (locking stream)" )
+  TEST_CASE( "Concurrent access (locking basic_stream)" )
   {
-    struct test_observer : observer < int, access_policy::locked >
+    struct test_observer : basic_observer < int, access_policy::locked >
     {
       void on_event( int& v_ ) final { receivedValues.insert( v_ ); }
       void on_done() final {}
@@ -438,7 +438,7 @@ namespace streams
       std::set< int > receivedValues;
     };
     
-    using stream_t = stream< int, access_policy::locked >;
+    using stream_t = basic_stream< int, access_policy::locked >;
     
     SECTION( "Send messages concurrently" )
     {

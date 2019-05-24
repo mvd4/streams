@@ -48,7 +48,7 @@ namespace streams
     observable_base& operator= ( const observable_base& )
     {
       // we implement this in order to not restrict derived classes
-      // copying observer ptrs does not make sense, so don't do anything here
+      // copying basic_observer ptrs does not make sense, so don't do anything here
       return *this;  
     }
     
@@ -56,7 +56,7 @@ namespace streams
     observable_base& operator= ( observable_base&& other_ )
     {
       // we implement this in order to not restrict derived classes
-      // moving observer ptrs is not really intuitive, so just unregister them
+      // moving basic_observer ptrs is not really intuitive, so just unregister them
       for( auto o : other_.m_observers )
         o->stop_observing();
       other_.m_observers.clear();

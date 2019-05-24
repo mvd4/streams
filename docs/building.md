@@ -37,5 +37,5 @@ Now it's time to create your project files. You should create a dedicated folder
 ```
 
 5. **Build the tests and examples**
-Depending on your choice for the cmake generator you will now find the project files for building the tests and examples in the [build] folder. After you built the binaries, those will reside in  [build/bin].
+Depending on your choice for the cmake generator you will now find the project files for building the tests and examples in the `build` folder. After you built the binaries, those will reside in  `build/bin`.
 

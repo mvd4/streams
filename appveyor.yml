@@ -60,7 +60,7 @@ before_build:
     cmake .. -G "%MVD_GENERATOR%"
     
 build:
-  project: build/streams_test.sln
+  project: build/streams.sln
 
 
 test_script:

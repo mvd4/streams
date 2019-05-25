@@ -40,11 +40,12 @@ namespace streams
     using base_t = observable_base< access_policy_t >;
   public:
 
+    using event_type = event_t;
+    using access_policy = access_policy_t;
+
     using observer_t = basic_observer< event_t, access_policy_t >;
     using on_event_t = std::function< void( event_t& ) >;
-    using filter_fn_t = std::function< bool( const event_t& ) >;
-
-
+    
     basic_stream() = default;
     ~basic_stream() override { on_done(); }
     

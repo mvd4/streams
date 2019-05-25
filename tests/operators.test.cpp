@@ -46,7 +46,7 @@ namespace streams
     SECTION( "Observer to filtered basic_stream receives filtered events only" )
     {
       stream_t s;
-      auto filtered = s >> []( const int& i ) { return i%2 == 0; };
+      auto filtered = s & []( const int& i ) { return i%2 == 0; };
       filter_observer o;
       filtered.subscribe( o );
     
@@ -64,7 +64,7 @@ namespace streams
     {
       stream_t s;
       
-      auto filtered1 = s >> []( int i ) { return i%2 == 0; };
+      auto filtered1 = s & []( int i ) { return i%2 == 0; };
       filter_observer o1;
       filtered1.subscribe( o1 );
 
@@ -86,7 +86,7 @@ namespace streams
     SECTION( "Moving a filtered basic_stream receives the same filtered events" )
     {
       stream_t s;
-      auto filtered1 = s >> []( int i ) { return i%2 == 0; };
+      auto filtered1 = s & []( int i ) { return i%2 == 0; };
       auto filtered2 = std::move( filtered1 );
     
       REQUIRE( s.get_observer_count() == 1 );
@@ -110,7 +110,7 @@ namespace streams
       
       {
         stream_t s;
-        filtered = s >> []( int i ) { return i%2 == 0; };
+        filtered = s & []( int i ) { return i%2 == 0; };
       
         filter_observer o;
         filtered.subscribe( o );
@@ -138,7 +138,7 @@ namespace streams
       stream_t s1;
       stream_t s2;
 
-      auto merged = s1 || s2;
+      auto merged = s1 | s2;
       merge_observer o;
       merged.subscribe( o );
       
@@ -160,7 +160,7 @@ namespace streams
       stream_t s1;
       stream_t s2;
 
-      auto merged1 = s1 || s2;
+      auto merged1 = s1 | s2;
       merge_observer o1;
       merged1.subscribe( o1 );
 
@@ -190,7 +190,7 @@ namespace streams
       stream_t s1;
       stream_t s2;
 
-      auto merged1 = s1 || s2;
+      auto merged1 = s1 | s2;
       merge_observer o1;
       merged1.subscribe( o1 );
 
@@ -221,7 +221,7 @@ namespace streams
       {
         stream_t s1;
         stream_t s2;
-        merged = s1 || s2;
+        merged = s1 | s2;
       
         merge_observer o;
         merged.subscribe( o );
@@ -229,5 +229,43 @@ namespace streams
     }
   }
 
+
+  TEST_CASE( "map streams" )
+  {
+    struct map_observer : basic_observer< std::string, access_policy::none >
+    {
+      void on_event( std::string& v_ ) final { receivedValues.push_back( v_ ); }
+      void on_done() final { onDoneReceived = true; }
+    
+      std::vector< std::string > receivedValues;
+      bool onDoneReceived = false;
+    };
+  
+    using stream_t = basic_stream< int, access_policy::none >;
+    
+    
+    SECTION( "Observer to mapped basic_stream receives mapped events" )
+    {
+      stream_t s;
+
+      auto mapped = map< stream_t, std::string >( 
+        s, 
+        []( const int& i_ ) -> std::string { return std::to_string( i_ ); } 
+      );
+
+      map_observer o;
+      mapped.subscribe( o );
+
+      auto inputValues = std::vector< int >{ 1, 2, 4, 7, 11, 42 };
+      auto expectedValues = std::vector< std::string >{ "1", "2", "4", "7", "11", "42" };
+
+      for( auto v : inputValues )
+      {
+        s << v;
+      }
+
+      CHECK( o.receivedValues == expectedValues );
+    }
+  }
 }
 }

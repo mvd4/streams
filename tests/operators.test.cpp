@@ -20,6 +20,7 @@
 
 #include <mvd/streams/operators.h>
 #include <mvd/streams/access_policy.h>
+#include <mvd/streams/basic_async_stream.h>
 
 #include <future>
 #include <random>
@@ -29,7 +30,7 @@ namespace mvd
 {
 namespace streams
 {
-  TEST_CASE( "filter streams" )
+  TEST_CASE( "filter basic_stream" )
   {
     struct filter_observer : basic_observer< int, access_policy::none >
     {
@@ -46,7 +47,7 @@ namespace streams
     SECTION( "Observer to filtered basic_stream receives filtered events only" )
     {
       stream_t s;
-      auto filtered = s & []( const int& i ) { return i%2 == 0; };
+      auto filtered = s && []( const int& i ) { return i%2 == 0; };
       filter_observer o;
       filtered.subscribe( o );
     
@@ -64,7 +65,7 @@ namespace streams
     {
       stream_t s;
       
-      auto filtered1 = s & []( int i ) { return i%2 == 0; };
+      auto filtered1 = s && []( int i ) { return i%2 == 0; };
       filter_observer o1;
       filtered1.subscribe( o1 );
 
@@ -86,7 +87,7 @@ namespace streams
     SECTION( "Moving a filtered basic_stream receives the same filtered events" )
     {
       stream_t s;
-      auto filtered1 = s & []( int i ) { return i%2 == 0; };
+      auto filtered1 = s && []( int i ) { return i%2 == 0; };
       auto filtered2 = std::move( filtered1 );
     
       REQUIRE( s.get_observer_count() == 1 );
@@ -110,7 +111,7 @@ namespace streams
       
       {
         stream_t s;
-        filtered = s & []( int i ) { return i%2 == 0; };
+        filtered = s && []( int i ) { return i%2 == 0; };
       
         filter_observer o;
         filtered.subscribe( o );
@@ -119,7 +120,8 @@ namespace streams
   }
 
 
-  TEST_CASE( "merge streams" )
+
+  TEST_CASE( "merge basic_stream" )
   {
     struct merge_observer : basic_observer< int, access_policy::none >
     {
@@ -138,7 +140,7 @@ namespace streams
       stream_t s1;
       stream_t s2;
 
-      auto merged = s1 | s2;
+      auto merged = s1 || s2;
       merge_observer o;
       merged.subscribe( o );
       
@@ -160,7 +162,7 @@ namespace streams
       stream_t s1;
       stream_t s2;
 
-      auto merged1 = s1 | s2;
+      auto merged1 = s1 || s2;
       merge_observer o1;
       merged1.subscribe( o1 );
 
@@ -190,7 +192,7 @@ namespace streams
       stream_t s1;
       stream_t s2;
 
-      auto merged1 = s1 | s2;
+      auto merged1 = s1 || s2;
       merge_observer o1;
       merged1.subscribe( o1 );
 
@@ -221,7 +223,7 @@ namespace streams
       {
         stream_t s1;
         stream_t s2;
-        merged = s1 | s2;
+        merged = s1 || s2;
       
         merge_observer o;
         merged.subscribe( o );
@@ -230,7 +232,7 @@ namespace streams
   }
 
 
-  TEST_CASE( "map streams" )
+  TEST_CASE( "map basic_stream" )
   {
     struct map_observer : basic_observer< std::string, access_policy::none >
     {
@@ -247,10 +249,9 @@ namespace streams
     SECTION( "Observer to mapped basic_stream receives mapped events" )
     {
       stream_t s;
-
-      auto mapped = map< stream_t, std::string >( 
-        s, 
-        []( const int& i_ ) -> std::string { return std::to_string( i_ ); } 
+      
+      auto mapped = s >> static_cast< std::function< std::string( const int& ) > >(
+        []( const int& i_ ) { return std::to_string( i_ ); }
       );
 
       map_observer o;

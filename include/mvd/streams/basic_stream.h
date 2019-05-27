@@ -46,6 +46,7 @@ namespace streams
     using observer_t = basic_observer< event_t, access_policy_t >;
     using on_event_t = std::function< void( event_t& ) >;
     
+
     basic_stream() = default;
     ~basic_stream() override { on_done(); }
     
@@ -86,7 +87,7 @@ namespace streams
 
     virtual basic_stream& operator << ( event_t e_ );
     void on_done();
-    
+
   private:
 
     class lambda_observer : public observer_t

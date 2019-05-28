@@ -32,23 +32,14 @@ namespace streams
   template< typename event_t >
   using filter_fn_t = std::function< bool( const event_t& ) >;
 
-  template< typename stream_t >
-  class filter_source 
-    : public basic_observer< 
-        typename stream_t::event_type, 
-        typename stream_t::access_policy 
-      >
+  template< typename event_t, typename access_policy_t >
+  class filter_source : public basic_observer< event_t, access_policy_t >        
   {
-    using base_t = basic_observer< 
-      typename stream_t::event_type, 
-      typename stream_t::access_policy 
-    >;
+    using base_t = basic_observer< event_t, access_policy_t >;
 
   public:
 
-    using event_t = typename stream_t::event_type;
-    
-    
+    template< typename stream_t >
     filter_source( stream_t& s_, filter_fn_t< event_t > fn_ )
       : m_filter( std::move( fn_ ) )
     {
@@ -75,7 +66,7 @@ namespace streams
       return *this;
     }
 
-    void attach( stream_t& s_ )
+    void attach( basic_stream< event_t, access_policy_t > & s_ )
     {
       m_pOutStream = &s_;
     }
@@ -92,7 +83,7 @@ namespace streams
   private:
 
     filter_fn_t< event_t > m_filter;
-    stream_t* m_pOutStream = nullptr;
+    basic_stream< event_t, access_policy_t >* m_pOutStream = nullptr;
   };
 
 
@@ -211,25 +202,14 @@ namespace streams
   template< typename src_event_t, typename dst_event_t >
   using map_fn_t = std::function< dst_event_t( const src_event_t& ) >;
 
-  template< typename src_stream_t, typename dst_event_t >
-  class map_source 
-    : public basic_observer< 
-        typename src_stream_t::event_type, 
-        typename src_stream_t::access_policy 
-      >
+  template< typename src_event_t, typename dst_event_t, typename access_policy_t >
+  class map_source : public basic_observer< src_event_t, access_policy_t >
   {
-    using base_t = basic_observer< 
-      typename src_stream_t::event_type, 
-      typename src_stream_t::access_policy 
-    >;
+    using base_t = basic_observer< src_event_t, access_policy_t >;
 
   public:
 
-    using src_event_t = typename src_stream_t::event_type;
-    using access_policy_t = typename src_stream_t::access_policy;
-    using dst_stream_t = basic_stream< dst_event_t, access_policy_t >;
-    
-
+    template< typename src_stream_t >
     map_source( src_stream_t& s_, map_fn_t< src_event_t, dst_event_t > fn_ )
       : m_map( std::move( fn_ ) )
     {
@@ -256,7 +236,7 @@ namespace streams
       return *this;
     }
 
-    void attach( dst_stream_t& s_ )
+    void attach( basic_stream< dst_event_t, access_policy_t >& s_ )
     {
       m_pOutStream = &s_;
     }
@@ -273,7 +253,7 @@ namespace streams
   private:
 
     map_fn_t< src_event_t, dst_event_t > m_map;
-    dst_stream_t* m_pOutStream = nullptr;
+    basic_stream< dst_event_t, access_policy_t >* m_pOutStream = nullptr;
   };
 
 
@@ -282,16 +262,23 @@ namespace streams
   // -----------------------------------------------------------------------------
 
   template< typename stream_t >
-  stream_t filter( 
+  basic_stream< typename stream_t::event_type, typename stream_t::access_policy >
+  filter( 
     stream_t& s_, 
     filter_fn_t< typename stream_t::event_type > f_ 
   )
   {
-    return std::move( stream_t( filter_source< stream_t >( s_, f_ ) ) );    
+    using event_t = typename stream_t::event_type;
+    using access_policy_t = typename stream_t::access_policy;
+   
+    return std::move( basic_stream< event_t, access_policy_t >( 
+      filter_source< event_t, access_policy_t >( s_, f_ )
+    ));
   }
   
   template< typename stream_t >
-  stream_t operator&& (
+  basic_stream< typename stream_t::event_type, typename stream_t::access_policy >
+  operator&& (
     stream_t& s_, 
     filter_fn_t< typename stream_t::event_type > f_ 
   )
@@ -326,9 +313,12 @@ namespace streams
     map_fn_t< typename src_stream_t::event_type, dst_event_t > f_ 
   )
   {
-    using dst_stream_t = basic_stream< dst_event_t, typename src_stream_t::access_policy >;
-
-    return std::move( dst_stream_t( map_source< src_stream_t, dst_event_t >( s_, f_ ) ) );    
+    using src_event_t = typename src_stream_t::event_type;
+    using access_policy_t = typename src_stream_t::access_policy;
+   
+    return std::move( basic_stream< dst_event_t, access_policy_t >( 
+      map_source< src_event_t, dst_event_t, access_policy_t >( s_, f_ ) ) 
+    );
   }
 
   template< typename src_stream_t, typename dst_event_t >

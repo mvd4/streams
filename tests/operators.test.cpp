@@ -116,9 +116,104 @@ namespace streams
         filter_observer o;
         filtered.subscribe( o );
       }
-    }    
+    }
   }
 
+
+  TEST_CASE( "filter basic_async_stream" )
+  {
+    struct filter_observer : basic_observer< int, access_policy::none >
+    {
+      void on_event( int& v_ ) final { values.push_back( v_ ); }
+      void on_done() final { onDoneReceived = true; }
+    
+      std::vector< int > values;
+      bool onDoneReceived = false;
+    };
+  
+    using stream_t = basic_async_stream< int, access_policy::none >;
+    
+    
+    SECTION( "Observer to filtered basic_stream receives filtered events only" )
+    {
+      stream_t s( 100 );
+      auto filtered = s && []( const int& i ) { return i%2 == 0; };
+      filter_observer o;
+      filtered.subscribe( o );
+    
+      std::vector< int > expectedValues = { 2, 4, 16, 100 };
+      for( auto v : expectedValues )
+      {
+        s << v;
+        s << v + 1;
+      }
+      
+      s.dispatch_events();
+
+      CHECK( o.values == expectedValues );
+    }
+
+    SECTION( "Copying a filtered basic_stream duplicates the filter" )
+    {
+      stream_t s( 100 );
+      
+      auto filtered1 = s && []( int i ) { return i%2 == 0; };
+      filter_observer o1;
+      filtered1.subscribe( o1 );
+
+      auto filtered2 = filtered1;
+      filter_observer o2;
+      filtered2.subscribe( o2 );
+    
+      std::vector< int > expectedValues = { 2, 4, 16, 100 };
+      for( auto v : expectedValues )
+      {
+          s << v;
+          s << v + 1;
+      }
+    
+      s.dispatch_events();
+
+      CHECK( o1.values == expectedValues );
+      CHECK( o2.values == expectedValues );
+    }
+    
+    SECTION( "Moving a filtered basic_stream receives the same filtered events" )
+    {
+      stream_t s( 100 );
+      auto filtered1 = s && []( int i ) { return i%2 == 0; };
+      auto filtered2 = std::move( filtered1 );
+    
+      REQUIRE( s.get_observer_count() == 1 );
+      
+      filter_observer o;
+      filtered2.subscribe( o );
+    
+      std::vector< int > expectedValues = { 2, 4, 16, 100 };
+      for( auto v : expectedValues )
+      {
+          s << v;
+          s << v + 1;
+      }
+    
+      s.dispatch_events();
+
+      CHECK( o.values == expectedValues );
+    }
+  
+    SECTION( "Can remove source basic_stream before filter" )
+    {
+      basic_stream< int, access_policy::none > filtered;
+      
+      {
+        stream_t s( 100 );
+        filtered = s && []( int i ) { return i%2 == 0; };
+      
+        filter_observer o;
+        filtered.subscribe( o );
+      }
+    }    
+  }
 
 
   TEST_CASE( "merge basic_stream" )
@@ -264,6 +359,45 @@ namespace streams
       {
         s << v;
       }
+
+      CHECK( o.receivedValues == expectedValues );
+    }
+  }
+
+
+  TEST_CASE( "map basic_async_stream" )
+  {
+    struct map_observer : basic_observer< std::string, access_policy::none >
+    {
+      void on_event( std::string& v_ ) final { receivedValues.push_back( v_ ); }
+      void on_done() final { onDoneReceived = true; }
+    
+      std::vector< std::string > receivedValues;
+      bool onDoneReceived = false;
+    };
+  
+    using stream_t = basic_async_stream< int, access_policy::none >;
+    
+    
+    SECTION( "Observer to mapped basic_stream receives mapped events" )
+    {
+      stream_t s( 100 );
+      
+      auto mapped = s >> static_cast< std::function< std::string( const int& ) > >(
+        []( const int& i_ ) { return std::to_string( i_ ); }
+      );
+
+      map_observer o;
+      mapped.subscribe( o );
+
+      auto inputValues = std::vector< int >{ 1, 2, 4, 7, 11, 42 };
+      auto expectedValues = std::vector< std::string >{ "1", "2", "4", "7", "11", "42" };
+
+      for( auto v : inputValues )
+      {
+        s << v;
+      }
+      s.dispatch_events();
 
       CHECK( o.receivedValues == expectedValues );
     }

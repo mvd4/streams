@@ -120,6 +120,12 @@ namespace streams
     basic_async_stream( size_t queueSize_ )
       : m_events( queueSize_ )
     {}
+
+    template< typename source_t >
+    basic_async_stream( source_t s_, size_t queueSize_  )
+      : basic_stream( std::move( s ) )
+      , basic_async_stream( queueSize_ )
+    {}
     
     basic_async_stream& operator << ( event_t e_ ) final
     {

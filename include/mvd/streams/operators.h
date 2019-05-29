@@ -91,15 +91,14 @@ namespace streams
   // merge_source
   // ---------------------------------------------------------------------------
 
-  template< typename stream_t >
+  template< typename event_t, typename access_policy_t >
   class merge_source
   {
   public:
 
-    using event_t = typename stream_t::event_type;
-    using access_policy_t = typename stream_t::access_policy;
     using observer_t = basic_observer< event_t, access_policy_t >;
 
+    template< typename stream_t >
     merge_source( stream_t& s1_, stream_t& s2_ )
       : m_observer1( *this )
       , m_observer2( *this )
@@ -138,7 +137,7 @@ namespace streams
       return *this;
     }
 
-    void attach( stream_t& s_ )
+    void attach( basic_stream< event_t, access_policy_t >& s_ )
     {
       m_pOutStream = &s_;
     }
@@ -188,7 +187,7 @@ namespace streams
     };
 
 
-    stream_t* m_pOutStream = nullptr;
+    basic_stream< event_t, access_policy_t >* m_pOutStream = nullptr;
     merge_observer m_observer1;
     merge_observer m_observer2;
     bool m_onDoneReceived = false;
@@ -289,16 +288,23 @@ namespace streams
 
 
   template< typename stream_t >
-  stream_t merge( 
+  basic_stream< typename stream_t::event_type, typename stream_t::access_policy >
+  merge(
     stream_t& s1_, 
     stream_t& s2_ 
   )
   {
-    return std::move( stream_t( merge_source< stream_t >( s1_, s2_ ) ) );
+    using event_t = typename stream_t::event_type;
+    using access_policy_t = typename stream_t::access_policy;
+   
+    return std::move( basic_stream< event_t, access_policy_t >( 
+      merge_source< event_t, access_policy_t >( s1_, s2_ )
+    ));    
   }
 
   template< typename stream_t >
-  stream_t operator|| (
+  basic_stream< typename stream_t::event_type, typename stream_t::access_policy >
+  operator|| (
     stream_t& s1_, 
     stream_t& s2_ 
   )

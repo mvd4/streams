@@ -123,7 +123,7 @@ namespace streams
 
     template< typename source_t >
     basic_async_stream( source_t s_, size_t queueSize_  )
-      : basic_stream( std::move( s ) )
+      : base_t( std::move( s_ ) )
       , basic_async_stream( queueSize_ )
     {}
     

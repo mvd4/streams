@@ -121,10 +121,17 @@ namespace streams
       : m_events( queueSize_ )
     {}
 
+    
+    template< typename source_t >
+    basic_async_stream( source_t s_, collection_t< event_t >&& preparedQueue_ )
+      : base_t( std::move( s_ ) )
+      , m_events( std::move( preparedQueue_ ) )
+    {}
+    
     template< typename source_t >
     basic_async_stream( source_t s_, size_t queueSize_  )
       : base_t( std::move( s_ ) )
-      , basic_async_stream( queueSize_ )
+      , m_events( queueSize_ )
     {}
     
     basic_async_stream& operator << ( event_t e_ ) final
